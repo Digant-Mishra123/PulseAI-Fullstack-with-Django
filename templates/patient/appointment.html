@@ -1,0 +1,160 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container my-5">
+    {% if messages %}
+        <div class="row">
+            <div class="col-md-6 mx-auto">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    {% for m in messages %}
+                        <p class="{{m.tags}} m-0">{{m}}</p>
+                    {% endfor %}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                  </div>
+            </div>
+        </div>
+    {% endif %}
+    <div class="row g-3">
+        <div class="col-md-4">
+            <div class="mb-4 text-center">
+                <h3>Book An Appointment</h3>
+                <p>1 Appointment/Person/Day</p>
+            </div>
+            <form action="{% url "appointment" %}" method="post" onsubmit="validateappointment(event)">
+                {% csrf_token %}
+                <div class="mb-2">
+                    <label>Mobile</label>
+                    <input type="text" name = "mobile" class="form-control" id="mobile">
+                    <label class="error" id="mobileError"></label>
+                </div>
+                <div class="mb-2">
+                    <label>Date</label>
+                    <input type="date" name = "date" class="form-control" id="date">
+                    <label class="error" id="dateError"></label>
+                </div>
+                <div class="mb-2">
+                    <label>Purpose of Appointment</label>
+                    <textarea rows="5" class="form-control" name="note" id="note"></textarea>
+                    <label class="error" id="noteError"></label>
+                </div>
+                <div class="mt-2">
+                    <input type="submit" value="Submit" class="btn btn-dark w-100">
+                </div>
+            </form>
+        </div>
+        <div class="col-md-8">
+            <div class="mb-4 text-center">
+                <h3>Current & Previous Bookings</h3>
+                <p>Check your booking details</p>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Mobile</th>
+                            <th>Note</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for app in appointments %}
+                            <tr>
+                                <td>{{app.date}}</td>
+                                <td>{{app.mobile}}</td>
+                                <td>{{app.note}}</td>
+                                <td>{{app.status}}</td>
+                                <td>
+                                    <a href="{% url "update_appointment" app.id %}">
+                                        <i class="fa-solid fa-pen-to-square me-2"></i>
+                                    </a>
+                                    <a href="{% url "delete_appointment" app.id %}" class="text-danger" onclick="confirmDelete(event)">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock content %}
+{% block javascript %}
+    <script>
+        function confirmDelete(event){
+            let res = confirm("Are you sure, you want to delete?")
+            if(!res){
+                event.preventDefault();
+            }
+        }
+        function validateappointment(e){
+            let mobile = document.querySelector('#mobile').value
+            let date = document.querySelector('#date').value
+            let note = document.querySelector('#note').value
+            let currentDate = new Date().toISOString().split('T')[0];
+            let maxDate = new Date();
+            maxDate.setDate(maxDate.getDate() + 7);
+            maxDate = maxDate.toISOString().split('T')[0];
+
+            let error = false
+            if(mobile === "" || mobile === null){
+                document.querySelector('#mobileError').innerHTML="Please enter your Mobile Number"
+                document.querySelector('#mobile').style.border="1px solid red"
+                error=true
+            }
+            else if (mobile.length !== 10 ) {
+                document.querySelector('#mobileError').innerHTML = "Mobile Number must be 10 digits";
+                document.querySelector('#mobile').style.border = "1px solid red";
+                error = true;
+            }
+            else{
+                document.querySelector('#mobileError').innerHTML=""
+                document.querySelector('#mobile').style.border="1px solid black"
+            }
+            if(date === "" || date === null){
+                document.querySelector('#dateError').innerHTML="Please enter Date of Appointment"
+                document.querySelector('#date').style.border="1px solid red"
+                error=true
+            }
+            else if (date < currentDate || date > maxDate) {
+                document.querySelector('#dateError').innerHTML = "Date of Appointment must be within the next 7 days ";
+                document.querySelector('#date').style.border = "1px solid red";
+                error = true;
+            }else{
+                document.querySelector('#dateError').innerHTML=""
+                document.querySelector('#date').style.border="1px solid black"
+            }
+            if(note === "" || note === null){
+                document.querySelector('#noteError').innerHTML="Please enter Purpose of Appointment"
+                document.querySelector('#note').style.border="1px solid red"
+                error=true
+            }else{
+                document.querySelector('#noteError').innerHTML=""
+                document.querySelector('#note').style.border="1px solid black"
+            }
+            if(error){
+                e.preventDefault()
+            }
+        }
+        window.onload = function() {
+            let currentDate = new Date().toISOString().split('T')[0];
+            let maxDate = new Date();
+            maxDate.setDate(maxDate.getDate() + 7);
+            maxDate = maxDate.toISOString().split('T')[0];
+    
+            let dateInput = document.querySelector('#date');
+            dateInput.setAttribute('min', currentDate);
+            dateInput.setAttribute('max', maxDate);
+    
+            // Restrict calendar view
+            dateInput.addEventListener('focus', function() {
+                this.setAttribute('min', currentDate);
+                this.setAttribute('max', maxDate);
+            });
+        }
+    </script>
+{% endblock javascript %}
+

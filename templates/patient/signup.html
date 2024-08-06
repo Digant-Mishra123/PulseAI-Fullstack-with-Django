@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+{% load static %}
+{% block content %}
+    <div class="row my-3">
+        <div class="col-md-6 mx-auto">
+            <h3 class="text-center mb-2">Sign UP</h3>
+            {% for m in messages %}
+                <p class={{m.tags}}>{{m}}</p>
+            {% endfor %}
+            <form action="{% url "signup" %}" method="post" onsubmit="validateregistration(event)">
+                {% csrf_token %}
+                <input type="text" class="form-control rounded-0 mb-2" name="f_name" id="f_name" placeholder="First Name">
+                <label class="error" id="fnameError"></label>
+                <input type="text" class="form-control rounded-0 mb-2" name="l_name" id="l_name" placeholder="Last Name">
+                <label class="error" id="lnameError"></label>
+                <input type="text" class="form-control rounded-0 mb-2" name="u_name" id="u_name" placeholder="Username">
+                <label class="error" id="unameError"></label>
+                <input type="text" class="form-control rounded-0 mb-2" name="email" id="email" placeholder="Email">
+                <label class="error" id="emailError"></label>
+                <input type="password" class="form-control rounded-0 mb-2" name="pass" id="pass" placeholder="Password">
+                <label class="error" id="passwordError"></label>
+                <input type="password" class="form-control rounded-0 mb-2" name="pass2" id="pass2" placeholder="Confirm Password">
+                <label class="error" id="password2Error"></label>
+                <input type="submit" class="btn btn-dark w-100 rounded-0 mt-2" value="Register">
+            </form>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+    <script src = "{% static "js/form-validator.js" %}"></script>
+{% endblock  %}
